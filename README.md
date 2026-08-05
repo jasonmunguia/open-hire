@@ -1,8 +1,38 @@
-# Open Hire
+<div align="center">
 
-Screen hundreds of resumes the way you swipe on a phone. One resume fills the
-screen, three buttons decide, and the survivors come back as a smaller pile.
-Repeat until the stack is interview-sized.
+<img src="docs/banner.svg" alt="Open Hire — swipe-style resume screening" width="820">
+
+<br>
+
+**Screen hundreds of resumes the way you swipe on a phone.**<br>
+One resume fills the screen. Three buttons decide. The survivors come back as a
+smaller pile, and you go again until the stack is interview-sized.
+
+<br>
+
+<img src="docs/screenshot.png" alt="Open Hire running on a phone: a resume fills the screen with Go Back, Reject, Auto-Bid and Next Round beneath it, a notes box, and a round counter reading 3 of 1289" width="300">
+
+<br>
+<sub><i>Round 1, candidate 3 of 1,289. Details anonymised.</i></sub>
+
+<br><br>
+
+<a href="#the-fastest-way-to-use-this"><b>Get started</b></a> &nbsp;·&nbsp;
+<a href="#before-anything-else-label-the-resumes"><b>Label your PDF</b></a> &nbsp;·&nbsp;
+<a href="docs/ui-mockup.html"><b>Try the UI</b></a> &nbsp;·&nbsp;
+<a href="#access-and-privacy--read-this-once"><b>Privacy</b></a>
+
+<br>
+
+<sub>
+  <img src="https://img.shields.io/badge/tests-33%20passing-3E9B6E?style=flat-square" alt="33 tests passing">
+  <img src="https://img.shields.io/badge/cost%20to%20run-%240-E0703A?style=flat-square" alt="Free to run">
+  <img src="https://img.shields.io/badge/license-MIT-8A8A94?style=flat-square" alt="MIT license">
+</sub>
+
+</div>
+
+---
 
 Built for the case where a job posting gets 1,800 applicants and nobody has
 20 hours to read them.
