@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.vercel/
+.env*.local
+.DS_Store
+
+# Never commit candidate data. These are real people's resumes.
+assets/
+input/
+*.pdf
+*.xlsx
+*.csv
+__pycache__/
+*.pyc
+.pytest_cache/

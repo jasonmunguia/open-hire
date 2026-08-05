@@ -1,0 +1,723 @@
+<title>Open Hire — UI mockup</title>
+<style>
+  :root{
+    --page-bg:#F5F4F2; --page-fg:#17171A; --page-muted:#6B6B73; --page-line:#DEDCD8;
+    --accent:#C2410C; --frame:#26262B;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --page-bg:#111113; --page-fg:#EDECEA; --page-muted:#8C8C95; --page-line:#2A2A30; --accent:#E0703A; --frame:#000; }
+  }
+  :root[data-theme="dark"]{ --page-bg:#111113; --page-fg:#EDECEA; --page-muted:#8C8C95; --page-line:#2A2A30; --accent:#E0703A; --frame:#000; }
+  :root[data-theme="light"]{ --page-bg:#F5F4F2; --page-fg:#17171A; --page-muted:#6B6B73; --page-line:#DEDCD8; --accent:#C2410C; --frame:#26262B; }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--page-bg); color:var(--page-fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1240px; margin:0 auto; padding:38px 24px 72px; }
+  .eyebrow{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin:0 0 10px;
+  }
+  h1{ font-size:clamp(26px,4vw,36px); line-height:1.1; margin:0 0 12px; letter-spacing:-.02em; text-wrap:balance; }
+  .lede{ margin:0 0 26px; color:var(--page-muted); font-size:15.5px; line-height:1.6; max-width:66ch; }
+
+  .switcher{ display:flex; align-items:center; gap:10px; margin:0 0 22px; flex-wrap:wrap; }
+  .switcher .sw-label{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:10px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--page-muted);
+  }
+  .seg{ display:inline-flex; border:1px solid var(--page-line); border-radius:999px; padding:3px; gap:2px; }
+  .seg button{
+    appearance:none; border:0; background:transparent; color:var(--page-muted); cursor:pointer;
+    padding:7px 16px; border-radius:999px; font:600 13px/1 inherit;
+  }
+  .seg button.on{ background:var(--accent); color:#fff; }
+  .seg button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .framehold{ display:flex; justify-content:center; margin-bottom:44px; }
+
+  /* ── device frame ────────────────────────────────── */
+  .device{
+    position:relative; background:#0C0C0E; overflow:hidden; color:#F2F1EF; user-select:none;
+    border:10px solid var(--frame);
+    box-shadow:0 40px 80px -22px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06) inset;
+    transition:width .3s cubic-bezier(.22,.9,.3,1), height .3s cubic-bezier(.22,.9,.3,1);
+  }
+  .device[data-mode="phone"]{ width:390px; height:844px; border-radius:44px; }
+  .device[data-mode="laptop"]{ width:1140px; height:790px; border-radius:16px; }
+  @media (max-width:1220px){ .device[data-mode="laptop"]{ width:100%; max-width:1140px; } }
+
+  .app{ position:absolute; inset:0; display:flex; flex-direction:column; padding:14px 12px 10px; gap:0; }
+  .device[data-mode="laptop"] .app{
+    display:grid; padding:16px 20px 18px; gap:0 26px;
+    grid-template-columns:1fr 372px; grid-template-rows:auto 1fr;
+    grid-template-areas:"top top" "main side";
+  }
+  .device[data-mode="laptop"] .topbar{ grid-area:top; }
+  .device[data-mode="laptop"] .main{ grid-area:main; display:flex; flex-direction:column; min-height:0; }
+  .device[data-mode="laptop"] .side{ grid-area:side; display:flex; flex-direction:column; min-height:0; padding-top:6px; }
+  .device[data-mode="laptop"] .side .actions{ margin-top:auto; }
+  /* On phone the two wrappers vanish so children flow in one column. */
+  .main,.side{ display:contents; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; height:44px; flex:0 0 auto; }
+  .tabs{ display:flex; align-items:center; gap:4px; }
+  .tab{
+    appearance:none; border:0; background:transparent; color:#7E7E88;
+    font:600 17px/1 -apple-system,system-ui,sans-serif; letter-spacing:-.01em;
+    padding:9px 14px; border-radius:999px; cursor:pointer;
+  }
+  .tab.active{ background:var(--accent); color:#fff; font-weight:700; }
+  .tab:disabled{ cursor:default; opacity:.55; }
+  .menu-btn{
+    position:relative; appearance:none; border:0; background:transparent; padding:8px; cursor:pointer;
+    display:grid; place-items:center; border-radius:10px;
+  }
+  .menu-btn:hover{ background:rgba(255,255,255,.07); }
+  .menu-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .menu-btn span{ display:block; width:20px; height:2px; background:#F2F1EF; border-radius:2px; }
+  .menu-btn span+span{ margin-top:5px; }
+  .badge-dot{
+    position:absolute; top:-3px; right:-3px; min-width:17px; height:17px; padding:0 4px;
+    background:var(--accent); color:#fff; border-radius:999px; font-style:normal;
+    font:700 10px/17px ui-monospace,monospace; text-align:center;
+  }
+
+  .dots{ display:flex; gap:5px; justify-content:center; height:12px; align-items:center; flex:0 0 auto; }
+  .dots i{ width:22px; height:3px; border-radius:2px; background:rgba(255,255,255,.22); display:block; }
+  .dots i.on{ background:#F2F1EF; }
+
+  .cardwrap{ flex:1 1 auto; min-height:0; padding:6px 0 0; }
+  .card{
+    position:relative; height:100%; border-radius:18px; overflow:hidden; cursor:zoom-in;
+    background:#F7F6F3; box-shadow:0 8px 30px rgba(0,0,0,.5); display:grid; place-items:center;
+    transition:transform .28s cubic-bezier(.22,.9,.3,1), opacity .28s;
+  }
+  .card:focus-visible{ outline:3px solid var(--accent); outline-offset:3px; }
+  .card .hint{
+    position:absolute; left:0; right:0; bottom:0; padding:22px 14px 10px; text-align:center;
+    font:500 11px/1 -apple-system,system-ui,sans-serif; color:#5A5A62;
+    background:linear-gradient(to top,rgba(247,246,243,.96),rgba(247,246,243,0)); pointer-events:none;
+  }
+  /* Drag stamps sit on white paper, so reject uses charcoal (the button's white
+     X would vanish) and advance matches the red heart. */
+  .stamp{
+    position:absolute; top:20px; padding:6px 14px; border-radius:8px; border:3px solid;
+    font:800 20px/1 -apple-system,system-ui,sans-serif; letter-spacing:.04em; opacity:0; transition:opacity .12s; z-index:3;
+  }
+  .stamp.no{ left:18px; color:#33333A; border-color:#33333A; transform:rotate(-14deg); }
+  .stamp.yes{ right:18px; color:#E5252D; border-color:#E5252D; transform:rotate(14deg); }
+
+  .meta{ flex:0 0 auto; padding:10px 4px 6px; }
+  .meta .nm{ font:700 19px/1.2 -apple-system,system-ui,sans-serif; letter-spacing:-.01em; }
+  .meta .sub{ font:400 13px/1.35 -apple-system,system-ui,sans-serif; color:#9A9AA4; margin-top:3px; }
+
+  .prior{ flex:0 0 auto; margin:0 0 8px; }
+  .prior[hidden]{ display:none; }
+  .prior button{
+    width:100%; text-align:left; appearance:none; cursor:pointer;
+    background:rgba(224,112,58,.12); border:1px solid rgba(224,112,58,.4);
+    border-radius:10px; padding:7px 10px; color:#F2F1EF;
+  }
+  .prior .tagline{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:8.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:3px;
+  }
+  .prior .txt{
+    font:400 12px/1.35 -apple-system,system-ui,sans-serif; color:#DBDBE2;
+    overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  }
+  .device[data-mode="laptop"] .prior .txt{ -webkit-line-clamp:6; }
+
+  .actions{ flex:0 0 auto; display:grid; grid-template-columns:repeat(5,1fr); align-items:start; padding:2px 0 8px; }
+  .slot{ display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .slot.s1{ grid-column:1; } .slot.s3{ grid-column:3; } .slot.s5{ grid-column:5; }
+  .act{
+    width:62px; height:62px; border-radius:50%; cursor:pointer; display:grid; place-items:center;
+    background:#1C1C20; border:1px solid rgba(255,255,255,.09); transition:transform .12s;
+  }
+  .act:hover{ transform:scale(1.07); }
+  .act:active{ transform:scale(.93); }
+  .act:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+  .act svg{ width:28px; height:28px; }
+  .lab{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:9px;
+    letter-spacing:.12em; text-transform:uppercase; color:#8A8A94; white-space:nowrap;
+  }
+
+  .notes{ flex:0 0 auto; height:106px; position:relative; }
+  .device[data-mode="laptop"] .notes{ height:150px; }
+  .notes textarea{
+    width:100%; height:100%; resize:none; border-radius:14px; padding:12px 44px 12px 14px;
+    background:#161619; border:1px solid rgba(255,255,255,.1); color:#F2F1EF;
+    font:400 13px/1.45 -apple-system,system-ui,sans-serif;
+  }
+  .notes textarea::placeholder{ color:#65656F; }
+  .notes textarea:focus{ outline:none; border-color:var(--accent); }
+  .mic{
+    position:absolute; right:10px; bottom:10px; width:30px; height:30px; border-radius:50%;
+    background:#26262C; border:1px solid rgba(255,255,255,.1); cursor:pointer; display:grid; place-items:center;
+  }
+  .mic.live{ background:var(--accent); border-color:var(--accent); }
+  .mic svg{ width:14px; height:14px; }
+  .counter{
+    position:absolute; left:0; right:0; bottom:2px; text-align:center;
+    font-family:ui-monospace,monospace; font-size:9px; letter-spacing:.14em; color:#5A5A64;
+  }
+  .device[data-mode="laptop"] .counter{ bottom:-16px; }
+
+  .toast{
+    position:absolute; left:50%; top:96px; transform:translate(-50%,-8px); z-index:25;
+    background:var(--accent); color:#fff; border-radius:12px; padding:11px 18px; max-width:78%;
+    font:600 13px/1.4 -apple-system,system-ui,sans-serif; text-align:center;
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  /* ── reader ──────────────────────────────────────── */
+  .reader{
+    position:absolute; inset:0; background:#0C0C0E; z-index:20; display:flex; flex-direction:column;
+    opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .reader.open{ opacity:1; pointer-events:auto; }
+  .reader-bar{ flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px; gap:10px; }
+  .reader-bar .who{ font:600 15px/1.2 -apple-system,system-ui,sans-serif; }
+  .reader-bar .pg{ font-family:ui-monospace,monospace; font-size:10px; color:#8A8A94; letter-spacing:.1em; margin-top:3px; }
+  .closebtn{
+    appearance:none; border:0; width:30px; height:30px; border-radius:50%; cursor:pointer;
+    background:#25252B; color:#F2F1EF; font-size:17px; line-height:1; display:grid; place-items:center;
+  }
+  .reader-scroll{ flex:1 1 auto; overflow-y:auto; overflow-x:hidden; padding:0 6px 24px; cursor:zoom-out; }
+  .reader-scroll .sheet-frame{ margin:0 auto 14px; }
+
+  /* ── resume sheet ────────────────────────────────── */
+  .sheet-frame{ overflow:hidden; }
+  .sheet{
+    width:612px; height:792px; background:#fff; color:#111; transform-origin:top left;
+    padding:44px 48px; font-family:Georgia,"Times New Roman",serif; font-size:11.5px; line-height:1.42;
+  }
+  .sheet h2{ font:700 21px/1.1 -apple-system,Helvetica,sans-serif; letter-spacing:.06em; margin:0 0 5px; text-transform:uppercase; }
+  .sheet .contact{ font-family:-apple-system,Helvetica,sans-serif; font-size:10.5px; color:#333; margin:0 0 16px; }
+  .sheet h3{
+    font:700 11px/1 -apple-system,Helvetica,sans-serif; letter-spacing:.14em; text-transform:uppercase;
+    margin:16px 0 6px; padding-bottom:3px; border-bottom:1.2px solid #222;
+  }
+  .sheet .row{ display:flex; justify-content:space-between; gap:12px; font-weight:700; margin-top:8px; }
+  .sheet .row .r{ font-weight:400; color:#444; white-space:nowrap; }
+  .sheet .sub2{ font-style:italic; color:#333; display:flex; justify-content:space-between; gap:12px; }
+  .sheet ul{ margin:4px 0 0; padding-left:16px; }
+  .sheet li{ margin-bottom:3px; }
+  .sheet .skills{ font-size:11px; }
+
+  /* ── pools panel ─────────────────────────────────── */
+  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.55); z-index:29; opacity:0; pointer-events:none; transition:opacity .22s; }
+  .scrim.open{ opacity:1; pointer-events:auto; }
+  .panel{
+    position:absolute; top:0; right:0; bottom:0; width:340px; z-index:30; background:#141417;
+    border-left:1px solid rgba(255,255,255,.1); transform:translateX(100%);
+    transition:transform .26s cubic-bezier(.22,.9,.3,1); display:flex; flex-direction:column; padding:18px 0 0;
+  }
+  .panel.open{ transform:translateX(0); }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:0 16px 12px; }
+  .panel-head strong{ font:700 15px/1 -apple-system,system-ui,sans-serif; }
+  .pooltabs{ display:flex; gap:6px; padding:0 16px 12px; }
+  .pooltab{
+    appearance:none; border:1px solid rgba(255,255,255,.12); background:transparent; color:#9A9AA4;
+    border-radius:999px; padding:6px 11px; cursor:pointer;
+    font-family:ui-monospace,monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .pooltab.on{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .poolnote{
+    margin:0 16px 12px; padding:9px 11px; border-radius:10px; background:rgba(224,112,58,.12);
+    border:1px solid rgba(224,112,58,.35); font-size:11.5px; line-height:1.45; color:#E8D7CC;
+  }
+  .poolnote[hidden]{ display:none; }
+  .poollist{ flex:1 1 auto; overflow-y:auto; padding:0 16px 20px; }
+  .pcard{ border:1px solid rgba(255,255,255,.09); border-radius:12px; padding:11px 12px; margin-bottom:9px; background:#1A1A1E; }
+  .pcard .pn{ font:600 13px/1.25 -apple-system,system-ui,sans-serif; }
+  .pcard .ps{ font-size:11px; color:#8A8A94; margin-top:2px; }
+  .pcard .pnote{ margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.14); font-size:11.5px; line-height:1.4; color:#CFCFD6; }
+  .pcard .pnote b{
+    display:block; font-family:ui-monospace,monospace; font-size:8.5px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:2px; font-weight:700;
+  }
+  .pcard .pnote em{ color:#6E6E78; font-style:normal; }
+  .empty{ color:#5E5E68; font-size:12px; line-height:1.5; padding:18px 2px; }
+
+  /* ── annotations below the frame ─────────────────── */
+  .cols{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:34px; }
+  .cols h3{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+  }
+  .cols p{ font-size:14px; line-height:1.62; color:var(--page-muted); margin:0 0 13px; }
+  .cols strong{ color:var(--page-fg); font-weight:600; }
+  .flow{ list-style:none; margin:0; padding:0; }
+  .flow li{ position:relative; padding-left:26px; margin-bottom:13px; font-size:14px; line-height:1.55; color:var(--page-muted); }
+  .flow li::before{
+    content:""; position:absolute; left:6px; top:8px; width:7px; height:7px; border-radius:50%; background:var(--accent);
+  }
+  .flow li strong{ color:var(--page-fg); }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Open Hire · interactive UI mockup · synthetic data</p>
+  <h1>Open Hire — the screening UI</h1>
+  <p class="lede">Working mockup, not the build. Tap the resume to pop it out, use the buttons or drag the card sideways, type a note, open the ☰ to see the pools. Three synthetic candidates loop so you can watch a note follow someone into round&nbsp;2 — no real applicant is shown.</p>
+
+  <div class="switcher">
+    <span class="sw-label">Viewport</span>
+    <div class="seg" role="group" aria-label="Viewport size">
+      <button type="button" class="on" data-mode="phone">Phone</button>
+      <button type="button" data-mode="laptop">Laptop</button>
+    </div>
+  </div>
+
+  <div class="framehold">
+    <div class="device" id="device" data-mode="phone">
+      <div class="app">
+        <div class="topbar">
+          <nav class="tabs" aria-label="Open roles">
+            <button class="tab active" type="button">FDE</button>
+            <button class="tab" type="button" disabled>Role 2</button>
+            <button class="tab" type="button" disabled>Role 3</button>
+          </nav>
+          <button class="menu-btn" id="menuBtn" type="button" aria-label="View pools">
+            <span></span><span></span><span></span>
+            <em class="badge-dot" id="menuBadge" hidden>0</em>
+          </button>
+        </div>
+
+        <div class="main">
+          <div class="dots" id="dots"></div>
+          <div class="cardwrap">
+            <div class="card" id="card" role="button" tabindex="0" aria-label="Open full resume">
+              <div class="stamp no" id="stampNo">REJECT</div>
+              <div class="stamp yes" id="stampYes">ADVANCE</div>
+              <div class="sheet-frame" id="cardSheet"></div>
+              <div class="hint">Tap to open full resume</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="meta">
+            <div class="nm" id="mName">—</div>
+            <div class="sub" id="mSub">—</div>
+          </div>
+
+          <div class="prior" id="prior" hidden>
+            <button type="button" id="priorBtn">
+              <div class="tagline" id="priorTag">Round 1 note</div>
+              <div class="txt" id="priorTxt"></div>
+            </button>
+          </div>
+
+          <div class="actions">
+            <div class="slot s1">
+              <button class="act" id="bReject" type="button" aria-label="Reject">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+              </button>
+              <span class="lab">Reject</span>
+            </div>
+            <div class="slot s3">
+              <button class="act" id="bAuto" type="button" aria-label="Auto-bid">
+                <svg viewBox="0 0 24 24" fill="#7BADEA"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.45 6.2 20.5l1.1-6.45-4.7-4.6 6.5-.95z"/></svg>
+              </button>
+              <span class="lab">Auto-Bid</span>
+            </div>
+            <div class="slot s5">
+              <button class="act" id="bNext" type="button" aria-label="Next round">
+                <svg viewBox="0 0 24 24" fill="#E5252D"><path d="M12 20.5l-1.4-1.3C5.4 14.5 2 11.4 2 7.7 2 4.7 4.4 2.4 7.4 2.4c1.7 0 3.3.8 4.6 2.2 1.3-1.4 2.9-2.2 4.6-2.2 3 0 5.4 2.3 5.4 5.3 0 3.7-3.4 6.8-8.6 11.5z"/></svg>
+              </button>
+              <span class="lab">Next Round</span>
+            </div>
+          </div>
+
+          <div class="notes">
+            <textarea id="notes" placeholder="Notes on this candidate…" aria-label="Notes on this candidate"></textarea>
+            <button class="mic" id="mic" type="button" aria-label="Dictate notes">
+              <svg viewBox="0 0 24 24" fill="#D6D6DE"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M18 11a6 6 0 0 1-12 0H4a8 8 0 0 0 7 7.9V22h2v-3.1A8 8 0 0 0 20 11z"/></svg>
+            </button>
+            <div class="counter" id="counter">ROUND 1 · 1 / 555</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+
+      <div class="reader" id="reader">
+        <div class="reader-bar">
+          <div>
+            <div class="who" id="rName">—</div>
+            <div class="pg" id="rPages">PAGE 1 OF 1</div>
+          </div>
+          <button class="closebtn" id="rClose" type="button" aria-label="Close resume">✕</button>
+        </div>
+        <div class="reader-scroll" id="readerScroll"></div>
+      </div>
+
+      <div class="scrim" id="scrim"></div>
+      <div class="panel" id="panel">
+        <div class="panel-head">
+          <strong>Pools</strong>
+          <button class="closebtn" id="pClose" type="button" aria-label="Close pools">✕</button>
+        </div>
+        <div class="pooltabs">
+          <button class="pooltab on" data-pool="next" type="button">Next Round <b id="cNext">0</b></button>
+          <button class="pooltab" data-pool="auto" type="button">Auto-Bid <b id="cAuto">0</b></button>
+          <button class="pooltab" data-pool="rej" type="button">Rejected <b id="cRej">0</b></button>
+        </div>
+        <div class="poolnote" id="poolnote" hidden></div>
+        <div class="poollist" id="poollist"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h3>How a candidate moves</h3>
+      <ul class="flow">
+        <li><strong>Reject</strong> — out of the stack. Stays listed under Rejected so a mis-swipe is recoverable, but any note typed is discarded with them.</li>
+        <li><strong>Next Round</strong> — survives into the next pass. The note is saved and shown again when they come back around.</li>
+        <li><strong>Auto-Bid</strong> — pulled out of the review stack entirely. They skip every intermediate round and rejoin the main list only once the pool is down to the top 50.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Notes that follow the candidate</h3>
+      <p>Every note a candidate keeps is stamped with the round it was written in. When they reappear in round 2 or 3, the earlier note sits right above the notes box — tap it to read the full history — and the box below is empty for the new one.</p>
+      <p>So by the finals you have the whole trail on each person: what struck you at a glance in round 1, and what changed once you read them properly.</p>
+    </div>
+    <div>
+      <h3>Two things this mockup fakes</h3>
+      <p>Resumes here are drawn in HTML; the real app renders each PDF page as an image.</p>
+      <p>The round threshold is set to 2 candidates so you can watch the auto-bid merge happen in a few taps. In the real thing that number is <strong>50</strong>.</p>
+      <p>Laptop mode shows the layout, not the size — in a real browser it fills the whole window, so the resume gets considerably bigger than the frame here suggests.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TOP_N = 2;          /* real value is 50; small here so the merge is reachable */
+  var TOTAL_LABEL = 555;
+
+  var CANDIDATES = [
+    { id:"c1", name:"Priya Raghavan", year:"Masters", school:"Northeastern University", major:"Data Science",
+      email:"raghavan.p@northeastern.edu", phone:"(617) 555-0148", loc:"Boston, MA",
+      pages:[
+        { edu:[["Northeastern University","May 2026"],["M.S. Data Science — GPA 3.9","Boston, MA"]],
+          exp:[
+            ["Machine Learning Engineer, Intern","Jun 2025 – Dec 2025","Wayfair — Boston, MA",
+             ["Shipped a demand-forecasting model over 40M SKU-weeks that cut stockouts 12% across three fulfillment centers.",
+              "Rebuilt the feature pipeline in Spark, dropping nightly training from 6 hours to 38 minutes.",
+              "Owned the on-call rotation for four production models and wrote the runbook the team still uses."]],
+            ["Research Assistant","Sep 2024 – May 2025","Khoury College of Computer Sciences",
+             ["Co-authored a paper on transfer learning for low-resource sensor data, accepted to a NeurIPS workshop.",
+              "Built the labeling tool that annotated 60k accelerometer traces."]]
+          ],
+          skills:"Python, PyTorch, Spark, SQL, Airflow, Docker, Kubernetes, AWS (SageMaker, S3, Lambda), Terraform" }
+      ]},
+    { id:"c2", name:"Marcus Delgado", year:"Alumni", school:"Georgia Institute of Technology", major:"Computer Engineering",
+      email:"mdelgado@gatech.edu", phone:"(404) 555-0192", loc:"Atlanta, GA",
+      pages:[
+        { edu:[["Georgia Institute of Technology","May 2024"],["B.S. Computer Engineering, Highest Honors","Atlanta, GA"]],
+          exp:[
+            ["Field Applications Engineer","Aug 2024 – Present","Rockwell Automation — Atlanta, GA",
+             ["Deployed vision-inspection cells at 14 customer plants across food processing and automotive tier-1 suppliers.",
+              "Cut average commissioning time from 9 days to 4 by templating the PLC integration layer.",
+              "Ran on-site training for maintenance crews at 6 sites; became the account's named escalation contact."]],
+            ["Controls Engineering Co-op","Jan 2023 – Aug 2023","Gerdau Steel — Cartersville, GA",
+             ["Instrumented a rolling mill with 200+ sensor tags feeding a Grafana dashboard the plant manager checks daily.",
+              "Diagnosed a recurring hydraulic fault that had cost roughly 40 hours of downtime per quarter."]]
+          ],
+          skills:"C++, Python, ROS 2, Ladder/Structured Text, OPC-UA, Modbus, Ignition SCADA, Linux, Git" },
+        { edu:[["Projects",""]],
+          exp:[
+            ["Autonomous Pallet Shuttle — Capstone","2024","Georgia Tech Robotics Lab",
+             ["Led a 5-person team building a warehouse shuttle with SLAM navigation on a Jetson Orin.",
+              "Placed 2nd of 31 teams at the College of Engineering capstone expo."]],
+            ["Open Source","Ongoing","github.com/mdelgado",
+             ["Maintainer of a Modbus-to-MQTT bridge with 340 stars and packaging for Debian and Alpine."]]
+          ],
+          skills:"Certifications: Rockwell CCP153 · UL 508A Panel Shop · OSHA 30-Hour General Industry" }
+      ]},
+    { id:"c3", name:"Wei Chen", year:"Senior", school:"UC San Diego", major:"Cognitive Science, Machine Learning",
+      email:"weichen@ucsd.edu", phone:"(858) 555-0117", loc:"San Diego, CA",
+      pages:[
+        { edu:[["University of California, San Diego","Jun 2026"],["B.S. Cognitive Science (Machine Learning) — GPA 3.7","La Jolla, CA"]],
+          exp:[
+            ["Software Engineering Intern","Jun 2025 – Sep 2025","Anduril Industries — Costa Mesa, CA",
+             ["Built the operator-facing telemetry view used during three live field exercises.",
+              "Reduced dropped-frame rate on the video pipeline from 4.1% to 0.3% by reworking the buffering strategy."]],
+            ["Undergraduate Researcher","Jan 2025 – Jun 2025","UCSD Contextual Robotics Institute",
+             ["Ran human-subject studies on operator trust in semi-autonomous handoffs; 42 participants."]]
+          ],
+          skills:"TypeScript, React, Python, Go, gRPC, Postgres, Redis, Docker, Bazel" }
+      ]}
+  ];
+
+  var byId = {};
+  CANDIDATES.forEach(function(c){ byId[c.id] = c; });
+
+  /* state */
+  var noteLog   = {};                                    /* id -> [{round, text}] */
+  var heldAuto  = [];                                    /* auto-bid, out of the stack */
+  var rejected  = [];
+  var advanced  = [];                                    /* hearted this round */
+  var stack     = CANDIDATES.map(function(c){ return c.id; });
+  var ptr = 0, round = 1, page = 0, activePool = "next", merged = false;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var card=$("card"), cardSheet=$("cardSheet"), notes=$("notes"),
+      reader=$("reader"), readerScroll=$("readerScroll"), panel=$("panel"), scrim=$("scrim"), device=$("device");
+
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function cur(){ return byId[stack[ptr]]; }
+
+  function sheetHTML(c, p){
+    var pg = c.pages[p], h = "";
+    h += '<h2>'+esc(c.name)+'</h2>';
+    h += '<p class="contact">'+esc(c.email)+' &nbsp;·&nbsp; '+esc(c.phone)+' &nbsp;·&nbsp; '+esc(c.loc)+'</p>';
+    h += '<h3>'+(p===0?"Education":"Additional")+'</h3>';
+    pg.edu.forEach(function(e,i){
+      h += i===0 ? '<div class="row"><span>'+esc(e[0])+'</span><span class="r">'+esc(e[1])+'</span></div>'
+                 : '<div class="sub2"><span>'+esc(e[0])+'</span><span>'+esc(e[1])+'</span></div>';
+    });
+    h += '<h3>Experience</h3>';
+    pg.exp.forEach(function(x){
+      h += '<div class="row"><span>'+esc(x[0])+'</span><span class="r">'+esc(x[1])+'</span></div>';
+      h += '<div class="sub2"><span>'+esc(x[2])+'</span></div><ul>';
+      x[3].forEach(function(b){ h += '<li>'+esc(b)+'</li>'; });
+      h += '</ul>';
+    });
+    h += '<h3>'+(p===0?"Skills":"Credentials")+'</h3><p class="skills">'+esc(pg.skills)+'</p>';
+    return '<div class="sheet">'+h+'</div>';
+  }
+
+  function frame(c, p, scale){
+    return '<div class="sheet-frame" style="width:'+Math.round(612*scale)+'px;height:'+Math.round(792*scale)+'px">'
+         + '<div style="transform:scale('+scale+');transform-origin:top left">'+sheetHTML(c,p)+'</div></div>';
+  }
+
+  function renderCard(){
+    var c = cur();
+    if(!c) return;
+    var box = card.getBoundingClientRect();
+    var scale = Math.min((box.width-24)/612, (box.height-24)/792);
+    if(!(scale > 0)) scale = 0.5;
+    cardSheet.outerHTML = frame(c, page, scale);
+    cardSheet = card.querySelector(".sheet-frame");
+    cardSheet.id = "cardSheet";
+
+    $("dots").innerHTML = c.pages.map(function(_,i){ return '<i class="'+(i===page?"on":"")+'"></i>'; }).join("");
+    $("mName").textContent = c.name;
+    $("mSub").textContent  = c.year + " · " + c.school + " · " + c.major;
+    $("counter").textContent = "ROUND " + round + " · " + (ptr+1) + " / " + (round===1 ? TOTAL_LABEL : stack.length);
+
+    var log = noteLog[c.id] || [];
+    if(log.length){
+      $("prior").hidden = false;
+      $("priorTag").textContent = log.length === 1
+        ? "Round " + log[0].round + " note"
+        : log.length + " earlier notes · rounds " + log[0].round + "–" + log[log.length-1].round;
+      $("priorTxt").textContent = log[log.length-1].text;
+    } else {
+      $("prior").hidden = true;
+    }
+  }
+
+  function toast(msg){
+    var t = $("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 2600);
+  }
+
+  function openReader(){
+    var c = cur(); if(!c) return;
+    $("rName").textContent = c.name;
+    $("rPages").textContent = "PAGE 1 OF " + c.pages.length + (c.pages.length>1 ? " · SCROLL FOR MORE" : "");
+    var w = device.getBoundingClientRect().width;
+    var scale = Math.min((w - 40)/612, 1);
+    readerScroll.innerHTML = c.pages.map(function(_,i){ return frame(c,i,scale); }).join("");
+    reader.classList.add("open");
+  }
+  function closeReader(){ reader.classList.remove("open"); }
+
+  function decide(kind){
+    var c = cur(); if(!c) return;
+    var text = notes.value.trim();
+
+    if(kind === "rej"){
+      rejected.push(c.id);                     /* note is discarded with them */
+    } else {
+      if(text){
+        (noteLog[c.id] = noteLog[c.id] || []).push({ round: round, text: text });
+      }
+      if(kind === "auto"){ if(heldAuto.indexOf(c.id) < 0) heldAuto.push(c.id); }
+      else { advanced.push(c.id); }
+    }
+
+    card.style.transform = kind==="rej"  ? "translateX(-130%) rotate(-16deg)"
+                         : kind==="next" ? "translateX(130%) rotate(16deg)"
+                         : "translateY(-130%) scale(.9)";
+    card.style.opacity = "0";
+
+    setTimeout(function(){
+      ptr++; page = 0; notes.value = "";
+      if(ptr >= stack.length) endRound();
+      card.style.transition = "none"; card.style.transform = "none";
+      renderCard();
+      requestAnimationFrame(function(){ card.style.transition = ""; card.style.opacity = "1"; });
+    }, 240);
+
+    refreshPools();
+  }
+
+  function endRound(){
+    var survivors = advanced.slice();
+    advanced = [];
+
+    if(!survivors.length && !heldAuto.length){
+      stack = CANDIDATES.map(function(c){ return c.id; });   /* mockup restart */
+      ptr = 0; round = 1; noteLog = {}; rejected = []; merged = false;
+      toast("Everyone was rejected — mockup reset to round 1.");
+      return;
+    }
+
+    if(survivors.length <= TOP_N && heldAuto.length && !merged){
+      survivors = survivors.concat(heldAuto);
+      toast("Top " + TOP_N + " reached — " + heldAuto.length + " auto-bid candidate"
+            + (heldAuto.length>1?"s":"") + " merged into the stack.");
+      heldAuto = []; merged = true;
+    } else {
+      toast("Round " + (round+1) + " — " + survivors.length + " candidate"
+            + (survivors.length>1?"s":"") + " carried over with their notes.");
+    }
+
+    if(!survivors.length){ survivors = CANDIDATES.map(function(c){ return c.id; }); round = 0; }
+    stack = survivors; ptr = 0; round++;
+  }
+
+  function refreshPools(){
+    $("cNext").textContent = advanced.length;
+    $("cAuto").textContent = heldAuto.length;
+    $("cRej").textContent  = rejected.length;
+    var live = advanced.length + heldAuto.length;
+    var b = $("menuBadge");
+    b.textContent = live; b.hidden = !live;
+    renderPool();
+  }
+
+  function poolIds(){
+    return activePool === "next" ? advanced : activePool === "auto" ? heldAuto : rejected;
+  }
+
+  function renderPool(){
+    var ids = poolIds(), el = $("poollist"), pn = $("poolnote");
+
+    if(activePool === "auto"){
+      pn.hidden = false;
+      pn.textContent = "Held out of the review stack. Auto-bid candidates skip every "
+        + "intermediate round and rejoin the main list once the pool reaches the top " + TOP_N + ".";
+    } else { pn.hidden = true; }
+
+    if(!ids.length){
+      el.innerHTML = '<p class="empty">'
+        + (activePool==="rej" ? "Nothing rejected yet. Rejected candidates stay listed so a mis-swipe is always recoverable."
+           : activePool==="auto" ? "No auto-bids yet. Star a candidate to hold them for the finals."
+           : "Nobody advanced yet. Candidates you heart appear here with every note attached.")
+        + '</p>';
+      return;
+    }
+    el.innerHTML = ids.map(function(id){
+      var c = byId[id], log = noteLog[id] || [];
+      return '<div class="pcard"><div class="pn">'+esc(c.name)+'</div>'
+           + '<div class="ps">'+esc(c.year)+' · '+esc(c.school)+'</div>'
+           + (activePool === "rej" ? ""
+              : (log.length
+                  ? log.map(function(n){ return '<div class="pnote"><b>Round '+n.round+'</b>'+esc(n.text)+'</div>'; }).join("")
+                  : '<div class="pnote"><em>No note written</em></div>'))
+           + '</div>';
+    }).join("");
+  }
+
+  /* events */
+  var startX=0, startY=0, dragging=false, dragged=false;
+
+  card.addEventListener("click", function(){ if(!dragged) openReader(); });
+  card.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openReader(); } });
+  readerScroll.addEventListener("click", closeReader);
+  $("rClose").addEventListener("click", function(e){ e.stopPropagation(); closeReader(); });
+
+  $("bReject").addEventListener("click", function(){ decide("rej"); });
+  $("bAuto").addEventListener("click",   function(){ decide("auto"); });
+  $("bNext").addEventListener("click",   function(){ decide("next"); });
+
+  $("priorBtn").addEventListener("click", function(){
+    var log = noteLog[cur().id] || [];
+    toast(log.map(function(n){ return "R" + n.round + ": " + n.text; }).join("  ·  "));
+  });
+
+  $("mic").addEventListener("click", function(){
+    this.classList.toggle("live");
+    if(this.classList.contains("live")) notes.focus();
+  });
+
+  $("menuBtn").addEventListener("click", function(){ panel.classList.add("open"); scrim.classList.add("open"); renderPool(); });
+  function closePanel(){ panel.classList.remove("open"); scrim.classList.remove("open"); }
+  $("pClose").addEventListener("click", closePanel);
+  scrim.addEventListener("click", closePanel);
+
+  Array.prototype.forEach.call(document.querySelectorAll(".pooltab"), function(t){
+    t.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll(".pooltab"), function(o){ o.classList.remove("on"); });
+      t.classList.add("on"); activePool = t.dataset.pool; renderPool();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function(b){
+    b.addEventListener("click", function(){
+      Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function(o){ o.classList.remove("on"); });
+      b.classList.add("on");
+      device.dataset.mode = b.dataset.mode;
+      setTimeout(renderCard, 320);
+    });
+  });
+
+  card.addEventListener("pointerdown", function(e){
+    dragging=true; dragged=false; startX=e.clientX; startY=e.clientY;
+    card.setPointerCapture(e.pointerId); card.style.transition="none";
+  });
+  card.addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    var dx=e.clientX-startX, dy=e.clientY-startY;
+    if(Math.abs(dx)>6 || Math.abs(dy)>6) dragged=true;
+    card.style.transform = "translate("+dx+"px,"+(dy*0.25)+"px) rotate("+(dx*0.05)+"deg)";
+    $("stampNo").style.opacity  = dx < -40 ? Math.min(1,(-dx-40)/70) : 0;
+    $("stampYes").style.opacity = dx >  40 ? Math.min(1,( dx-40)/70) : 0;
+  });
+  card.addEventListener("pointerup", function(e){
+    if(!dragging) return;
+    dragging=false;
+    var dx=e.clientX-startX;
+    card.style.transition="";
+    $("stampNo").style.opacity=0; $("stampYes").style.opacity=0;
+    if(dx < -110) decide("rej");
+    else if(dx > 110) decide("next");
+    else card.style.transform="none";
+    /* `dragged` stays true until the next pointerdown so the click that follows
+       a swipe cannot also open the reader. */
+  });
+
+  renderCard();
+  refreshPools();
+  window.addEventListener("resize", renderCard);
+})();
+</script>
