@@ -4,6 +4,9 @@
   "description": "Swipe-style resume screening for job postings with too many applicants",
   "license": "MIT",
   "private": false,
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

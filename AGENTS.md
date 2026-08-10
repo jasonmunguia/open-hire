@@ -23,20 +23,37 @@ how to be helpful, follow this file.
    not pretend to, and do not ask the user for passwords. Ask only for the
    connection string and let the CLI handle Vercel auth.
 5. **Do not redesign the UI.** `app/page.tsx` and `lib/rounds.ts` are working,
-   tested code. Change them only if the user asks.
+   tested code. Change them only if the user asks. One edit they may ask for:
+   the header chips near the top of `app/page.tsx` (`FDE`, `Role 2`, `Role 3`)
+   are hard-coded display placeholders — renaming the first to their role
+   label is a one-line change and within scope if requested.
 
 ---
 
 ## Phase 1 — Get it running (no accounts needed)
 
+Check versions first — the failure modes are confusing otherwise:
+
+```bash
+node --version     # needs 20.9+ (Next.js 16 requirement; see "engines" in package.json)
+python3 --version  # needs 3.10+ (the pipeline uses `str | None` annotations)
+```
+
+If either is too old, install from https://nodejs.org or
+https://www.python.org/downloads/ before continuing. Then:
+
 ```bash
 git clone https://github.com/jasonmunguia/open-hire.git
 cd open-hire
 npm install
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 npx vitest run
 python3 -m pytest tests -q
 ```
+
+If the pip step fails with `externally-managed-environment`, create a venv and
+use it for every Python command afterwards:
+`python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
 
 Expect **12 passing** round-logic tests and **21 passing** pipeline tests.
 
@@ -70,8 +87,8 @@ Decide which strategy applies:
 | None of the above | `heuristic` | **Low — must be reviewed** |
 
 **If it lands on `heuristic`, stop and tell the user before processing.** Show
-them the "Label the resumes first" section of the README and offer the ChatGPT
-prompt that produces a roster CSV. Ingesting a heuristic guess wastes their time
+them the "Before anything else: label the resumes" section of the README and
+offer the ChatGPT prompt that produces a roster CSV. Ingesting a heuristic guess wastes their time
 and produces a database they will not trust.
 
 Sanity-check the arithmetic out loud: pages ÷ candidates should land near 1–2
@@ -140,9 +157,12 @@ vercel link --yes --project "<name they chose>"
 vercel blob create-store resumes --access public --yes   # writes the token to .env.local
 ```
 
-Write `.env.local` with their `DATABASE_URL` and a `JOB_ID`. Keep the blob token
-Vercel already added. **Never print the connection string back in full** — it
-contains their password.
+Write `.env.local` with their `DATABASE_URL`, a `JOB_ID`, and — if they told
+you the role name — a `JOB_TITLE`, which becomes the browser-tab title and the
+job's name in the database. Keep the blob token Vercel already added; if
+`BLOB_READ_WRITE_TOKEN` did not appear in `.env.local`, run
+`vercel env pull .env.local`. **Never print the connection string back in
+full** — it contains their password.
 
 Verify the database is actually reachable before loading anything:
 
@@ -181,6 +201,7 @@ upload did not finish — run it again, then load again.
 ```bash
 vercel env add DATABASE_URL production
 vercel env add JOB_ID production
+vercel env add JOB_TITLE production   # only if it is set in .env.local
 vercel --prod --yes
 ```
 
@@ -242,7 +263,10 @@ Never round "probably fine" up to "done."
 |---|---|
 | `ENOTFOUND db.*.supabase.co` | Direct connection string; use the pooler |
 | Auth fails, password looks right | `#` or `@` in password needs URL-encoding |
-| `No module named fitz` | `pip install -r requirements.txt` (PyMuPDF imports as `fitz`) |
+| `No module named fitz` | `python3 -m pip install -r requirements.txt` (PyMuPDF imports as `fitz`) |
+| `externally-managed-environment` from pip | System Python blocks global installs; use a venv (`python3 -m venv .venv && source .venv/bin/activate`) |
+| `BLOB_READ_WRITE_TOKEN` missing after create-store | `vercel env pull .env.local` |
+| Build or install fails with an engine/syntax error | Node < 20.9 or Python < 3.10; check versions (Phase 1) |
 | Candidate count far too low | Boundary strategy misread the PDF; get a roster CSV |
 | `load.mjs` skips many candidates | Those rows have no email; email is the merge key |
 | Images 404 | `upload.mjs` did not finish; re-run it, then `load.mjs` |

@@ -155,11 +155,15 @@ and flags **every** candidate as `heuristic`. Treat that output as a draft.
 
 ### 1. Get the code running locally
 
+You need **git**, **Node 20.9 or newer**, and **Python 3.10 or newer**
+(`node --version` / `python3 --version` to check; installers at
+https://nodejs.org and https://www.python.org/downloads/).
+
 ```bash
 git clone https://github.com/jasonmunguia/open-hire.git
 cd open-hire
 npm install
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 Check it works before touching anything else:
@@ -225,7 +229,12 @@ vercel blob create-store resumes --access public --yes
 ```
 
 That second command creates the image store **and writes
-`BLOB_READ_WRITE_TOKEN` into `.env.local` for you.**
+`BLOB_READ_WRITE_TOKEN` into `.env.local` for you.** If you open `.env.local`
+and the token is not there, pull it from the linked project:
+
+```bash
+vercel env pull .env.local
+```
 
 ### 5. Fill in your environment
 
@@ -234,7 +243,9 @@ cp .env.example .env.local
 ```
 
 Edit `.env.local` and set `DATABASE_URL` and `JOB_ID`. Leave the blob token that
-Vercel already wrote there.
+Vercel already wrote there. `JOB_TITLE` is optional but worth setting — it
+becomes the browser-tab title and the job's name in the database; without it
+your screener is called "Open Hire".
 
 ### 6. Upload and load
 
@@ -251,10 +262,13 @@ never blanks a field a previous run filled.
 ```bash
 vercel env add DATABASE_URL production      # paste the same value
 vercel env add JOB_ID production
+vercel env add JOB_TITLE production         # only if you set it locally
 vercel --prod --yes
 ```
 
-Open the URL it prints. That is the link you send to whoever is screening.
+Open the URL it prints. You should see the first candidate's resume with the
+four buttons under it — that is the link you send to whoever is screening. If
+you get a Vercel login page instead, that is step 8.
 
 ### 8. Turn off Vercel's login wall
 
@@ -301,8 +315,9 @@ You are putting real people's contact details on the public internet. At minimum
   blocks `*.pdf`, `*.xlsx`, `*.csv` and `assets/` — leave those rules alone.
 - Delete the blob store and database when you are finished hiring.
 
-If you need a real gate, `middleware.ts` is the place to add one, and a shared
-passcode is about thirty lines.
+If you need a real gate, create a `middleware.ts` at the repo root — Next.js
+runs it on every request; it does not exist yet — and a shared passcode is
+about thirty lines.
 
 ---
 
@@ -327,6 +342,12 @@ the round state is recomputed from it every time, so undo restores the previous
 state exactly, including stepping back across a round boundary.
 
 Change `TOP_N` in `lib/rounds.ts` if 50 is the wrong number for you.
+
+Two other things you may want to make yours: `JOB_TITLE` in `.env.local` sets
+the browser-tab title, and the header chips at the top of `app/page.tsx`
+(`FDE`, `Role 2`, `Role 3`) are hard-coded display placeholders from the
+original deployment — renaming the first one to your role is a one-line edit,
+and something to ask your agent for by name.
 
 ---
 
@@ -365,11 +386,17 @@ password needs URL-encoding. `#` → `%23`.
 **Images do not load** — `scripts/upload.mjs` did not finish, or `load.mjs` ran
 before it. Run upload, then load again.
 
-**"No such module: fitz"** — `pip install -r requirements.txt`. The package is
+**"No such module: fitz"** — `python3 -m pip install -r requirements.txt`. The package is
 called PyMuPDF but imports as `fitz`.
 
 **The candidate count is wrong after ingest** — the boundary strategy misread
-your PDF. Re-read "Label the resumes first"; a roster CSV fixes it.
+your PDF. Re-read "Before anything else: label the resumes"; a roster CSV
+fixes it.
+
+**`error: externally-managed-environment` from pip** — your system Python
+(Homebrew, Debian/Ubuntu) refuses global installs. Make a virtual environment
+and use it for every Python command after:
+`python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
 
 **Vercel says you are out of blob operations** — uploads are metered on free
 plans, reads are not. The meter stops once your images are up.
