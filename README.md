@@ -30,7 +30,7 @@ smaller pile, and you go again until the stack is interview-sized.
 <sub>
   <img src="https://img.shields.io/badge/tests-33%20passing-3E9B6E?style=flat-square" alt="33 tests passing">
   <img src="https://img.shields.io/badge/cost%20to%20run-%240-E0703A?style=flat-square" alt="Free to run">
-  <img src="https://img.shields.io/badge/license-MIT-8A8A94?style=flat-square" alt="MIT license">
+  <img src="https://img.shields.io/badge/license-Apache--2.0-8A8A94?style=flat-square" alt="Apache-2.0 license">
 </sub>
 
 </div>
@@ -406,4 +406,4 @@ plans, reads are not. The meter stops once your images are up.
 
 ## License
 
-MIT. Use it, change it, sell it.
+Apache-2.0. Use it, change it, sell it — keep the NOTICE and the credit.
