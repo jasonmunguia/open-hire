@@ -2,6 +2,9 @@
 
 <img src="docs/banner.svg" alt="Open Hire — swipe-style resume screening" width="820">
 
+Built by [Jason Munguia](https://github.com/jasonmunguia). Apache-2.0 — free to use, fork and build on, **with credit**.
+
+
 <br>
 
 **Screen hundreds of resumes the way you swipe on a phone.**<br>
