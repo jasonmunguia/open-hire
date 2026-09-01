@@ -214,7 +214,26 @@ This writes one PDF and one WebP image per page into `assets/`, plus
 > Use the **pooler** string, not "direct connection". Supabase dropped IPv4 for
 > direct connections on the free tier, so the direct one fails with `ENOTFOUND`.
 
-### 4. Create hosting and file storage — Vercel (free)
+### 4. Fill in your environment
+
+Do this **before** step 5, which writes into this same file.
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and set `DATABASE_URL` to the pooler string from step 3, and
+`JOB_ID` to any short name for this posting. `JOB_TITLE` is optional but worth
+setting — it becomes the browser-tab title and the job's name in the database;
+without it your screener is called "Open Hire".
+
+Leave `BLOB_READ_WRITE_TOKEN` as it is. That value is a placeholder ending in
+`...`, and step 5 replaces it with your real token.
+
+> **Never run `cp .env.example .env.local` a second time.** It overwrites the
+> whole file, including the real blob token, and puts the placeholder back.
+
+### 5. Create hosting and file storage — Vercel (free)
 
 1. Sign up at **https://vercel.com/signup** (GitHub login is fine)
 2. Install and log in the CLI:
@@ -231,24 +250,16 @@ vercel link --yes --project my-hiring-app
 vercel blob create-store resumes --access public --yes
 ```
 
-That second command creates the image store **and writes
-`BLOB_READ_WRITE_TOKEN` into `.env.local` for you.** If you open `.env.local`
-and the token is not there, pull it from the linked project:
+That second command creates the image store **and writes your real
+`BLOB_READ_WRITE_TOKEN` into `.env.local`,** replacing the placeholder.
+
+Open `.env.local` and check. The line should be a long string starting
+`vercel_blob_rw_` — **not** the placeholder ending in `...`. If it still ends in
+`...`, pull the token from the linked project:
 
 ```bash
 vercel env pull .env.local
 ```
-
-### 5. Fill in your environment
-
-```bash
-cp .env.example .env.local
-```
-
-Edit `.env.local` and set `DATABASE_URL` and `JOB_ID`. Leave the blob token that
-Vercel already wrote there. `JOB_TITLE` is optional but worth setting — it
-becomes the browser-tab title and the job's name in the database; without it
-your screener is called "Open Hire".
 
 ### 6. Upload and load
 
@@ -388,6 +399,12 @@ password needs URL-encoding. `#` → `%23`.
 
 **Images do not load** — `scripts/upload.mjs` did not finish, or `load.mjs` ran
 before it. Run upload, then load again.
+
+**`upload.mjs` prints a FAIL line for every image** — your blob token is wrong,
+usually because `.env.local` was overwritten by a second
+`cp .env.example .env.local`. Check the `BLOB_READ_WRITE_TOKEN` line: if it ends
+in `...` it is the placeholder, not a token. Run `vercel env pull .env.local` to
+restore the real one, then re-run upload. It resumes where it stopped.
 
 **"No such module: fitz"** — `python3 -m pip install -r requirements.txt`. The package is
 called PyMuPDF but imports as `fitz`.

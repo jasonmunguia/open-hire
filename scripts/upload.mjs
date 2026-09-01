@@ -20,9 +20,16 @@ if (existsSync(".env.local")) {
   }
 }
 const token = process.env.BLOB_READ_WRITE_TOKEN;
-if (!token) {
-  console.error("BLOB_READ_WRITE_TOKEN is not set.");
+// The .env.example placeholder is truthy, so a bare !token check lets it through
+// and every upload then fails one at a time with an opaque auth error.
+if (!token || token.endsWith("...")) {
+  console.error(
+    token
+      ? "BLOB_READ_WRITE_TOKEN is still the placeholder from .env.example."
+      : "BLOB_READ_WRITE_TOKEN is not set."
+  );
   console.error("Run:  vercel blob create-store resumes --access public --yes");
+  console.error("Or:   vercel env pull .env.local");
   process.exit(1);
 }
 

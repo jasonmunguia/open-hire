@@ -2,7 +2,7 @@
   "name": "open-hire",
   "version": "1.0.0",
   "description": "Swipe-style resume screening for job postings with too many applicants",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": false,
   "engines": {
     "node": ">=20.9"
