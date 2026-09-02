@@ -2,8 +2,13 @@
 
 <img src="docs/banner.svg" alt="Open Hire — swipe-style resume screening" width="820">
 
+</div>
+
+I **HATED** screening 1,289 resumes **MANUALLY** in a spreadsheet, **WHEN** every one of them was a two-second gut call, and **HOW** the maybes kept getting lost between rounds... so I built it for myself (<ins>and now you ;)</ins>).
+
 Built by [Jason Munguia](https://github.com/jasonmunguia). Apache-2.0 — free to use, fork and build on, **with credit**.
 
+<div align="center">
 
 <br>
 
@@ -49,6 +54,9 @@ Built for the case where a job posting gets 1,800 applicants and nobody has
 
 ## The fastest way to use this
 
+**Setup: 30–60 minutes.** Most of that is labelling your PDF so the pipeline
+knows where each resume starts, which is the one part only you can do.
+
 Paste this into Claude Code, Cursor, Codex, or any coding agent, from inside a
 folder where you want the project:
 
@@ -74,12 +82,17 @@ If you would rather do it yourself, the whole thing is below.
 - **Four buttons.** Go Back (undo), Reject, Auto-Bid, Next Round.
 - **Notes per candidate** — kept only if you advance them, and shown again the
   next time that person comes around, stamped with the round you wrote them in.
+
+  <img src="docs/note-carry.png" alt="Round 2: the same candidate comes back with the Round 1 note sitting above an empty notes box" width="300">
 - **Rounds.** A round cannot end until everyone in it has a decision. Then the
   survivors form the next, smaller round.
 - **Auto-Bid** is a fast-track: those people skip the middle rounds entirely and
   rejoin only at the finals.
 - **A hard cap.** Screening stops when the final pool fits under 50 people.
-- **Nothing is ever deleted.** Every pool is listed and reversible.
+- **Nothing is ever deleted.** Every pool is listed and reversible, with every
+  note still attached.
+
+  <img src="docs/pools.png" alt="The Pools panel: Next Round, Auto-Bid and Rejected tabs with counts, and a hearted candidate listed with their Round 1 note" width="300">
 - **Works on a laptop and a phone.** Drag the card, or use the arrow keys.
 
 Cost to run: **$0** on the free tiers of Vercel and Supabase, for a few thousand
