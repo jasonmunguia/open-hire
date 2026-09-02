@@ -4,7 +4,7 @@
 
 </div>
 
-I **HATED** screening 1,289 resumes **MANUALLY** in a spreadsheet, **WHEN** every one of them was a two-second gut call, and **HOW** the maybes kept getting lost between rounds... so I built it for myself (<ins>and now you ;)</ins>).
+My boss **HATED** reviewing resumes, so 1,500 applicants crawled **INCONSISTENTLY** through a desk-bound spreadsheet **WHEN** he was almost never at a desk... but he **LOVED** Tinder. So I gamified hiring into a swipe app he could run from his phone anywhere, and screen-to-hire time dropped 80%. Built it for him (<ins>and now you ;)</ins>).
 
 Built by [Jason Munguia](https://github.com/jasonmunguia). Apache-2.0 — free to use, fork and build on, **with credit**.
 
