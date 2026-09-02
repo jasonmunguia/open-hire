@@ -385,6 +385,17 @@ and something to ask your agent for by name.
 When the shortlist is settled, one command invites everyone on it to pick an
 interview slot from your scheduling link.
 
+Have a coding agent? Paste this from inside the project folder:
+
+```
+My screening in https://<your-app>.vercel.app is done. Read AGENTS.md
+Phase 8 and book the interviews. My scheduling link is <your Cal.com or
+Calendly link> and the invite should come from <your name>. Show me the
+dry run and wait for my yes before sending anything.
+```
+
+Or by hand:
+
 ```bash
 python3 scripts/book.py --url https://my-hiring-app.vercel.app --dry-run   # who would be contacted
 python3 scripts/book.py --url https://my-hiring-app.vercel.app             # send
