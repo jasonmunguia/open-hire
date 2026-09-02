@@ -36,8 +36,8 @@ def test_normalize_phone():
 
 
 def test_render_fills_every_placeholder():
-    text = book.render(open(MESSAGE).read(), PEOPLE[0], "Robotics Engineer", ENV["BOOKING_URL"], "Jason")
-    assert "Priya" in text and "Robotics Engineer" in text and ENV["BOOKING_URL"] in text and "Jason" in text
+    text = book.render(open(MESSAGE).read(), PEOPLE[0], "Robotics Engineer", ENV["BOOKING_URL"], ENV["SENDER_NAME"])
+    assert "Priya" in text and "Robotics Engineer" in text and ENV["BOOKING_URL"] in text and ENV["SENDER_NAME"] in text
     assert "{" not in text
 
 
@@ -120,3 +120,39 @@ def test_skill_references_only_files_that_exist():
             continue  # runtime output, git-ignored by design
         assert os.path.exists(os.path.join(ROOT, rel)), f"SKILL.md names {rel}, which is not in the repo"
     assert "book.py" in text and "--dry-run" in text
+
+
+def test_imessage_refused_off_macos():
+    assert book.platform_problem("imessage", "Linux").startswith("iMessage needs Messages.app")
+    assert "--channel email" in book.platform_problem("imessage", "Windows")
+    assert book.platform_problem("email", "Windows") is None
+    assert book.platform_problem("print", "Linux") is None
+    assert book.platform_problem("imessage", "Darwin") is None
+
+
+def test_unreadable_chatdb_is_named_before_any_send(tmp_path):
+    """No chat.db means no verification, and an unverified send is retried next run.
+    That is the double-text path, so the run must refuse up front."""
+    assert "does not exist" in book.chatdb_problem(str(tmp_path / "missing.db"))
+    junk = tmp_path / "junk.db"; junk.write_bytes(b"not a database")
+    assert "Full Disk Access" in book.chatdb_problem(str(junk))
+
+
+def test_smtp_errors_become_next_actions():
+    import smtplib, socket
+    assert "apppasswords" in book.smtp_hint(smtplib.SMTPAuthenticationError(535, b"bad"))
+    assert "SMTP_HOST" in book.smtp_hint(socket.gaierror(8, "nodename nor servname"))
+    assert "port" in book.smtp_hint(ConnectionRefusedError())
+    assert "STARTTLS" in book.smtp_hint(smtplib.SMTPServerDisconnected("closed"))
+
+
+def test_smtp_preflight_refuses_before_contacting_anyone(tmp_path, monkeypatch):
+    for k, v in {"SMTP_HOST": "127.0.0.1", "SMTP_PORT": "9", "SMTP_USER": "u", "SMTP_PASS": "p", "SMTP_FROM": "u@example.test"}.items():
+        monkeypatch.setenv(k, v)
+    hint = book.smtp_preflight()
+    assert hint and "port" in hint
+    src = tmp_path / "f.json"; src.write_text(json.dumps({"finalists": PEOPLE}))
+    r = run(["--from-json", str(src), "--channel", "email", "--ledger", str(tmp_path / "l.jsonl")], tmp_path,
+            env={**ENV, "SMTP_HOST": "127.0.0.1", "SMTP_PORT": "9", "SMTP_USER": "u", "SMTP_PASS": "p", "SMTP_FROM": "u@example.test"})
+    assert r.returncode != 0 and "SMTP check failed" in r.stderr and "Nobody contacted" in r.stderr
+    assert "SENT" not in r.stdout

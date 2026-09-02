@@ -55,7 +55,7 @@ If the pip step fails with `externally-managed-environment`, create a venv and
 use it for every Python command afterwards:
 `python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
 
-Expect **18 passing** round-logic tests and **31 passing** Python tests (21 pipeline, 10 booking).
+Expect **18 passing** round-logic tests and **35 passing** Python tests (21 pipeline, 14 booking).
 
 If either suite fails, fix that before going further — a broken baseline makes
 every later failure ambiguous. Report the actual counts you saw.
@@ -161,7 +161,8 @@ Write `.env.local` with their `DATABASE_URL`, a `JOB_ID`, and — if they told
 you the role name — a `JOB_TITLE`, which becomes the browser-tab title and the
 job's name in the database. Keep the blob token Vercel already added; if
 `BLOB_READ_WRITE_TOKEN` did not appear in `.env.local`, run
-`vercel env pull .env.local`. **Never print the connection string back in
+`vercel env pull .env.vercel.local` and copy that one line across (pulling
+straight into `.env.local` overwrites the values you just wrote). **Never print the connection string back in
 full** — it contains their password.
 
 Verify the database is actually reachable before loading anything:
@@ -254,8 +255,10 @@ python3 scripts/book.py --url <live URL> --dry-run
 Before that, `BOOKING_URL` and `SENDER_NAME` must be in `.env.local`; ask for
 the scheduling link and the name the invite should come from. Show the user
 the dry-run list (names and count) and get a yes, then run it without
-`--dry-run`. Default channel is iMessage on this Mac, which needs Full Disk
-Access for the terminal; `--channel email` needs the five `SMTP_*` values.
+`--dry-run`. Default channel is iMessage, macOS only, and the run refuses to
+start until the terminal can read `~/Library/Messages/chat.db` (Full Disk
+Access); on Windows or Linux, or with no Messages account, use `--channel
+email`, which tests the SMTP login before contacting anyone.
 
 The script exits nonzero with the reason if screening is not settled (a
 half-finished round, or a pool still above the cap); do not work around that
@@ -288,10 +291,13 @@ Never round "probably fine" up to "done."
 | Auth fails, password looks right | `#` or `@` in password needs URL-encoding |
 | `No module named fitz` | `python3 -m pip install -r requirements.txt` (PyMuPDF imports as `fitz`) |
 | `externally-managed-environment` from pip | System Python blocks global installs; use a venv (`python3 -m venv .venv && source .venv/bin/activate`) |
-| `BLOB_READ_WRITE_TOKEN` missing after create-store | `vercel env pull .env.local` |
+| `BLOB_READ_WRITE_TOKEN` missing after create-store | `vercel env pull .env.vercel.local`, copy the one line into `.env.local` |
 | Build or install fails with an engine/syntax error | Node < 20.9 or Python < 3.10; check versions (Phase 1) |
 | Candidate count far too low | Boundary strategy misread the PDF; get a roster CSV |
 | `load.mjs` skips many candidates | Those rows have no email; email is the merge key |
 | Images 404 | `upload.mjs` did not finish; re-run it, then `load.mjs` |
 | Blob operation limit hit | Uploads are metered on free plans, reads are not |
 | Prepared-statement errors | A pooler needs `prepare: false` — already set in `lib/db.ts` |
+| `book.py`: cannot read chat.db / cannot verify iMessage sends | Terminal lacks Full Disk Access; add it in System Settings → Privacy & Security, open a new terminal |
+| `book.py`: iMessage needs macOS | Windows/Linux: `--channel email` with the five `SMTP_*` values |
+| `book.py`: `SMTP check failed: ...` | The hint names the value: host, port (587), app password (Gmail: https://myaccount.google.com/apppasswords), or STARTTLS vs SSL port |

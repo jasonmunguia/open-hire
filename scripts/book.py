@@ -8,12 +8,14 @@ Reads the shortlist from the deployed app's /api/finalists (refused with the
 reason while screening is still open), renders scripts/booking-message.txt for
 each person, and sends it over one channel:
 
-  imessage  (default) Messages.app on this Mac via AppleScript. Every send is
+  imessage  (default) macOS only. Messages.app via AppleScript. Every send is
             verified by finding the booking link in ~/Library/Messages/chat.db
-            before it is recorded. Needs Full Disk Access for the terminal.
-  email     SMTP. SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS / SMTP_FROM in
-            .env.local. Recorded once the server accepts the message.
-  print     Writes what would be sent to stdout. Never contacts anyone.
+            before it is recorded, so the terminal needs Full Disk Access; the
+            run refuses to start if chat.db cannot be read.
+  email     Any OS. SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS / SMTP_FROM in
+            .env.local. The login is tested before anyone is contacted; a
+            message is recorded once the server accepts it.
+  print     Any OS. Writes what would be sent to stdout. Never contacts anyone.
 
 Nobody is contacted twice. data/booking-ledger.jsonl records every verified
 send; a person in it is skipped. For iMessage there is also a heal pass: if
@@ -27,11 +29,12 @@ Environment (.env.local or the shell):
   SENDER_NAME   required. Who the message is from.
 """
 import argparse
-import fcntl
 import json
 import os
+import platform
 import re
 import smtplib
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -39,6 +42,12 @@ import time
 import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
+
+try:                      # Unix
+    import fcntl
+except ImportError:       # Windows
+    fcntl = None
+    import msvcrt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -62,6 +71,79 @@ on run {targetPhone, msgText}
     end tell
 end run
 '''
+
+
+def acquire_lock(lock_f):
+    """One run at a time. fcntl on Unix, msvcrt on Windows. Returns False if another run holds it."""
+    try:
+        if fcntl:
+            fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        else:
+            msvcrt.locking(lock_f.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        return False
+    return True
+
+
+def platform_problem(channel, system=None):
+    """Why this channel cannot run on this OS, or None."""
+    system = system or platform.system()
+    if channel == "imessage" and system != "Darwin":
+        return ("iMessage needs Messages.app, which only exists on macOS. "
+                "On " + ("Windows" if system == "Windows" else system) +
+                " use --channel email (SMTP_* values in .env.local) or --channel print.")
+    return None
+
+
+def chatdb_problem(path=None):
+    """Why chat.db cannot be read, or None. Without it a send cannot be verified,
+    and an unverified send is retried next run: that is how people get texted twice."""
+    path = path or CHAT_DB
+    if not os.path.exists(path):
+        return f"{path} does not exist. Is Messages signed in on this Mac?"
+    try:
+        con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        con.execute("select count(*) from message limit 1").fetchone()
+        con.close()
+    except sqlite3.Error as e:
+        return (f"cannot read {path} ({e}). Grant your terminal Full Disk Access: "
+                "System Settings -> Privacy & Security -> Full Disk Access, add the app "
+                "you run this from, then open a new terminal window.")
+    return None
+
+
+def smtp_hint(err):
+    """Turn a raw smtplib/socket error into the next thing to check."""
+    if isinstance(err, smtplib.SMTPAuthenticationError):
+        return ("login rejected: wrong SMTP_USER or SMTP_PASS. Gmail needs an app password, "
+                "not your account password: https://myaccount.google.com/apppasswords")
+    if isinstance(err, socket.gaierror):
+        return "SMTP_HOST is not a real hostname (for Gmail: smtp.gmail.com)"
+    if isinstance(err, (ConnectionRefusedError, TimeoutError, socket.timeout)):
+        return "nothing answered on SMTP_HOST:SMTP_PORT. Check the port (Gmail: 587) and your network"
+    if isinstance(err, (smtplib.SMTPServerDisconnected, smtplib.SMTPNotSupportedError, ssl_error_type())):
+        return "the server closed the connection at STARTTLS. Wrong port for this server (587 expects STARTTLS; 465 is SSL-only)"
+    return str(err)
+
+
+def ssl_error_type():
+    import ssl
+    return ssl.SSLError
+
+
+def smtp_preflight():
+    """Log in and log out without sending. Returns None if it works, else a hint."""
+    host, port = os.environ.get("SMTP_HOST"), int(os.environ.get("SMTP_PORT", "587"))
+    user, pw, sender = os.environ.get("SMTP_USER"), os.environ.get("SMTP_PASS"), os.environ.get("SMTP_FROM")
+    if not all([host, user, pw, sender]):
+        return "SMTP_HOST, SMTP_USER, SMTP_PASS and SMTP_FROM must all be set in .env.local"
+    try:
+        with smtplib.SMTP(host, port, timeout=20) as s:
+            s.starttls()
+            s.login(user, pw)
+        return None
+    except (smtplib.SMTPException, OSError) as e:
+        return smtp_hint(e)
 
 
 def load_env_local(path=os.path.join(ROOT, ".env.local")):
@@ -129,8 +211,11 @@ def ledger_append(ledger_path, entry):
 def applescript_send(phone, text):
     r = None
     for script in (APPLESCRIPT, APPLESCRIPT_LEGACY):
-        r = subprocess.run(["osascript", "-e", script, phone, text],
-                           capture_output=True, text=True, timeout=30)
+        try:
+            r = subprocess.run(["osascript", "-e", script, phone, text],
+                               capture_output=True, text=True, timeout=30)
+        except FileNotFoundError:
+            return False, "osascript not found: iMessage sending only works on macOS"
         if r.returncode == 0:
             return True, ""
     return False, (r.stderr.strip() if r else "osascript did not run")
@@ -185,7 +270,7 @@ def smtp_send(person, subject, text):
             refused = s.send_message(msg)
         return (not refused), (f"refused: {refused}" if refused else "")
     except (smtplib.SMTPException, OSError) as e:
-        return False, str(e)
+        return False, smtp_hint(e)
 
 
 def fetch_finalists(url):
@@ -221,6 +306,25 @@ def main(argv=None):
         sys.exit("BOOKING_URL and SENDER_NAME must be set in .env.local (see .env.example).")
     template = open(args.message, encoding="utf-8").read()
 
+    # Preflight: refuse before contacting anyone if this channel cannot work here.
+    # For iMessage that includes being able to READ chat.db, because a send that
+    # cannot be verified is not recorded and would be retried next run.
+    problem = platform_problem(args.channel)
+    if problem:
+        sys.exit(problem)
+    if args.channel == "imessage":
+        problem = chatdb_problem()
+        if problem and not args.dry_run:
+            sys.exit("Cannot verify iMessage sends: " + problem + " Nobody contacted.")
+        if problem:
+            print("WARNING: " + problem + " A real run will refuse to start until this is fixed.")
+    if args.channel == "email":
+        problem = smtp_preflight()
+        if problem and not args.dry_run:
+            sys.exit("SMTP check failed: " + problem + ". Nobody contacted.")
+        print(("WARNING: SMTP check failed: " + problem + ". A real run will refuse to start until this is fixed.")
+              if problem else "SMTP login OK")
+
     if args.url:
         status, body = fetch_finalists(args.url)
         if status == 409:
@@ -242,9 +346,7 @@ def main(argv=None):
     if lock_f is None:
         os.makedirs(os.path.dirname(args.ledger), exist_ok=True)
         lock_f = open(args.ledger + ".lock", "w")
-    try:
-        fcntl.flock(lock_f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
+    if not acquire_lock(lock_f):
         sys.exit("Another book.py run holds the ledger lock. Aborting.")
 
     already = load_ledger_keys(args.ledger)

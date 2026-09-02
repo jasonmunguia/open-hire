@@ -27,13 +27,13 @@ smaller pile, and you go again until the stack is interview-sized.
 
 <a href="#the-fastest-way-to-use-this"><b>Get started</b></a> &nbsp;·&nbsp;
 <a href="#before-anything-else-label-the-resumes"><b>Label your PDF</b></a> &nbsp;·&nbsp;
-<a href="docs/ui-mockup.html"><b>Try the UI</b></a> &nbsp;·&nbsp;
+<a href="https://htmlpreview.github.io/?https://github.com/jasonmunguia/open-hire/blob/main/docs/ui-mockup.html"><b>Try the UI</b></a> &nbsp;·&nbsp;
 <a href="#access-and-privacy--read-this-once"><b>Privacy</b></a>
 
 <br>
 
 <sub>
-  <img src="https://img.shields.io/badge/tests-49%20passing-3E9B6E?style=flat-square" alt="49 tests passing">
+  <img src="https://img.shields.io/badge/tests-53%20passing-3E9B6E?style=flat-square" alt="53 tests passing">
   <img src="https://img.shields.io/badge/cost%20to%20run-%240-E0703A?style=flat-square" alt="Free to run">
   <img src="https://img.shields.io/badge/license-Apache--2.0-8A8A94?style=flat-square" alt="Apache-2.0 license">
 </sub>
@@ -45,10 +45,10 @@ smaller pile, and you go again until the stack is interview-sized.
 Built for the case where a job posting gets 1,800 applicants and nobody has
 20 hours to read them.
 
-> **See it before you build it:** open [`docs/ui-mockup.html`](docs/ui-mockup.html)
-> in a browser. It's a self-contained, fully interactive mockup with synthetic
-> candidates — swipe the cards, open the pools, watch a note carry into round 2.
-> No install, no data, no accounts.
+> **See it before you build it:** [**open the interactive mockup**](https://htmlpreview.github.io/?https://github.com/jasonmunguia/open-hire/blob/main/docs/ui-mockup.html)
+> in your browser. Synthetic candidates — swipe the cards, open the pools, watch a
+> note carry into round 2. No install, no data, no accounts. (It is the single
+> file `docs/ui-mockup.html`; that link renders it, the file page shows source.)
 
 ---
 
@@ -270,10 +270,12 @@ That second command creates the image store **and writes your real
 
 Open `.env.local` and check. The line should be a long string starting
 `vercel_blob_rw_` — **not** the placeholder ending in `...`. If it still ends in
-`...`, pull the token from the linked project:
+`...`, pull it from the linked project into a scratch file and copy the line
+over (pulling straight into `.env.local` would overwrite what you set in step 4):
 
 ```bash
-vercel env pull .env.local
+vercel env pull .env.vercel.local
+grep BLOB_READ_WRITE_TOKEN .env.vercel.local     # paste this line into .env.local
 ```
 
 ### 6. Upload and load
@@ -422,12 +424,17 @@ iMessage there is a second guard: before sending, it looks for the booking link
 in that person's thread on this Mac, so a text you sent by hand or a run that
 crashed mid-verification counts as done.
 
-Three channels, picked with `--channel`:
+**iMessage is macOS only.** On Windows or Linux use `--channel email`; the
+script refuses iMessage there and says so. On a Mac, it also refuses to start
+until it can read the Messages database, because that read is how a send gets
+verified.
+
+Three channels, picked with `--channel`, one channel per run:
 
 | Channel | How it sends | What counts as sent |
 |---|---|---|
 | `imessage` (default) | Messages.app on your Mac | The message is found in `~/Library/Messages/chat.db` |
-| `email` | SMTP, five `SMTP_*` values in `.env.local` | The server accepts it |
+| `email` | SMTP, five `SMTP_*` values in `.env.local`; login is tested first | The server accepts it |
 | `print` | Writes each message to the terminal | Nothing is sent |
 
 iMessage needs Full Disk Access for your terminal (System Settings → Privacy &
@@ -462,7 +469,7 @@ scripts/
   book.py             invites the shortlist to book interviews
   booking-message.txt the invitation, with placeholders
 skills/book-interviews  the same procedure as a drop-in agent skill
-tests/                21 pipeline, 10 booking, 18 round-logic tests
+tests/                21 pipeline, 14 booking, 18 round-logic tests
 docs/ui-mockup.html   standalone interactive UI mockup
 ```
 
@@ -480,8 +487,9 @@ before it. Run upload, then load again.
 **`upload.mjs` prints a FAIL line for every image** — your blob token is wrong,
 usually because `.env.local` was overwritten by a second
 `cp .env.example .env.local`. Check the `BLOB_READ_WRITE_TOKEN` line: if it ends
-in `...` it is the placeholder, not a token. Run `vercel env pull .env.local` to
-restore the real one, then re-run upload. It resumes where it stopped.
+in `...` it is the placeholder, not a token. Run `vercel env pull .env.vercel.local`,
+copy that file's `BLOB_READ_WRITE_TOKEN` line into `.env.local`, then re-run
+upload. It resumes where it stopped.
 
 **"No such module: fitz"** — `python3 -m pip install -r requirements.txt`. The package is
 called PyMuPDF but imports as `fitz`.
@@ -494,6 +502,22 @@ fixes it.
 (Homebrew, Debian/Ubuntu) refuses global installs. Make a virtual environment
 and use it for every Python command after:
 `python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
+
+**`book.py` says it cannot verify iMessage sends / cannot read chat.db** — your
+terminal lacks Full Disk Access. System Settings → Privacy & Security → Full
+Disk Access → add the app you run commands from (Terminal, iTerm, VS Code),
+then open a new terminal window. The run refuses to start without it, because
+a send it cannot verify would be retried next time and someone would get the
+text twice.
+
+**`book.py` says iMessage needs macOS** — you are on Windows or Linux. Pass
+`--channel email` with the five `SMTP_*` values in `.env.local`.
+
+**`SMTP check failed`** — the message names what to fix: a hostname that does
+not resolve (`SMTP_HOST`), nothing answering on the port (`SMTP_PORT`, 587 for
+Gmail), a login rejected (Gmail needs an app password from
+https://myaccount.google.com/apppasswords, not your account password), or a
+server that hangs up at STARTTLS (465 is SSL-only; use 587).
 
 **Vercel says you are out of blob operations** — uploads are metered on free
 plans, reads are not. The meter stops once your images are up.

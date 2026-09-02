@@ -23,13 +23,17 @@ dry run and said yes.
    - `SENDER_NAME`: who the invite is from.
    - The live app URL, `https://<their-app>.vercel.app`.
 3. Pick the channel with them:
-   - `imessage` (default): macOS only. Sends through Messages.app and is
-     verified by finding the booking link in `~/Library/Messages/chat.db`. The
-     terminal needs Full Disk Access (System Settings → Privacy & Security →
-     Full Disk Access) or verification cannot read that file.
+   - `imessage` (default): macOS only; the script refuses it elsewhere. Sends
+     through Messages.app and is verified by finding the booking link in
+     `~/Library/Messages/chat.db`. The terminal needs Full Disk Access (System
+     Settings → Privacy & Security → Full Disk Access, then a new terminal
+     window); the run refuses to start until it can read that file, because an
+     unverified send would be retried and someone would be texted twice.
    - `email`: any OS. Needs `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
      `SMTP_PASS`, `SMTP_FROM` in `.env.local`. For Gmail that is an app
-     password, not the account password.
+     password from https://myaccount.google.com/apppasswords, not the account
+     password. The login is tested before anyone is contacted; a failure names
+     the value to fix.
    - `print`: any OS, sends nothing. Use it to show the user the exact text.
 4. Offer to edit `scripts/booking-message.txt` with them. Keep the
    placeholders `{first_name}`, `{job_title}`, `{booking_url}`,
