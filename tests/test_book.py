@@ -109,3 +109,14 @@ def test_blocked_shortlist_contacts_nobody(tmp_path):
         srv.shutdown()
     assert r.returncode != 0
     assert "half-finished" in r.stderr and "7 undecided" in r.stderr and "Nobody contacted" in r.stderr
+
+
+def test_skill_references_only_files_that_exist():
+    """A cross-reference is a promise: every repo path the skill names must exist."""
+    import re
+    text = open(os.path.join(ROOT, "skills", "book-interviews", "SKILL.md")).read()
+    for rel in set(re.findall(r"`((?:scripts|data|skills)/[A-Za-z0-9_./-]+)`", text)):
+        if rel.startswith("data/"):
+            continue  # runtime output, git-ignored by design
+        assert os.path.exists(os.path.join(ROOT, rel)), f"SKILL.md names {rel}, which is not in the repo"
+    assert "book.py" in text and "--dry-run" in text

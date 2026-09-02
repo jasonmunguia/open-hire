@@ -55,7 +55,7 @@ If the pip step fails with `externally-managed-environment`, create a venv and
 use it for every Python command afterwards:
 `python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
 
-Expect **18 passing** round-logic tests and **30 passing** Python tests (21 pipeline, 9 booking).
+Expect **18 passing** round-logic tests and **31 passing** Python tests (21 pipeline, 10 booking).
 
 If either suite fails, fix that before going further — a broken baseline makes
 every later failure ambiguous. Report the actual counts you saw.

@@ -33,7 +33,7 @@ smaller pile, and you go again until the stack is interview-sized.
 <br>
 
 <sub>
-  <img src="https://img.shields.io/badge/tests-48%20passing-3E9B6E?style=flat-square" alt="48 tests passing">
+  <img src="https://img.shields.io/badge/tests-49%20passing-3E9B6E?style=flat-square" alt="49 tests passing">
   <img src="https://img.shields.io/badge/cost%20to%20run-%240-E0703A?style=flat-square" alt="Free to run">
   <img src="https://img.shields.io/badge/license-Apache--2.0-8A8A94?style=flat-square" alt="Apache-2.0 license">
 </sub>
@@ -394,6 +394,10 @@ Calendly link> and the invite should come from <your name>. Show me the
 dry run and wait for my yes before sending anything.
 ```
 
+That works because `AGENTS.md` carries the instructions. If your agent uses
+skills, `skills/book-interviews/` is the same procedure as a drop-in skill
+(for Claude Code, copy it to `~/.claude/skills/`).
+
 Or by hand:
 
 ```bash
@@ -457,7 +461,8 @@ scripts/
   load.mjs            manifest to Postgres
   book.py             invites the shortlist to book interviews
   booking-message.txt the invitation, with placeholders
-tests/                21 pipeline, 9 booking, 18 round-logic tests
+skills/book-interviews  the same procedure as a drop-in agent skill
+tests/                21 pipeline, 10 booking, 18 round-logic tests
 docs/ui-mockup.html   standalone interactive UI mockup
 ```
 
