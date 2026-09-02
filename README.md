@@ -4,7 +4,7 @@
 
 </div>
 
-My boss HATED reviewing resumes, BUT I noticed that he LOVED Tinder, so I gamified hiring into an app he could run from his phone anytime, anywhere. Built for him (<ins>and now you ;)</ins>).
+My boss HATED reviewing resumes & booking interviews, BUT I noticed that he LOVED Tinder, so I gamified hiring into an app he could run from his phone anytime, anywhere. Built for him (<ins>and now you ;)</ins>).
 
 Built by [Jason Munguia](https://github.com/jasonmunguia). Apache-2.0 — free to use, fork and build on, **with credit**.
 
