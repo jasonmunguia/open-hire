@@ -55,7 +55,7 @@ If the pip step fails with `externally-managed-environment`, create a venv and
 use it for every Python command afterwards:
 `python3 -m venv .venv && source .venv/bin/activate`, then re-run the install.
 
-Expect **12 passing** round-logic tests and **21 passing** pipeline tests.
+Expect **18 passing** round-logic tests and **30 passing** Python tests (21 pipeline, 9 booking).
 
 If either suite fails, fix that before going further — a broken baseline makes
 every later failure ambiguous. Report the actual counts you saw.
@@ -240,6 +240,29 @@ Tell the user:
 Then give them the URL and a one-paragraph summary of how screening works
 (rounds, the three buttons, notes only saved on advance). The app has a
 **How it works** button that explains it in the UI as well.
+
+---
+
+## Phase 8 — Book the interviews (only when the user asks, never on a schedule)
+
+When the user says the shortlist is done, invite it:
+
+```bash
+python3 scripts/book.py --url <live URL> --dry-run
+```
+
+Before that, `BOOKING_URL` and `SENDER_NAME` must be in `.env.local`; ask for
+the scheduling link and the name the invite should come from. Show the user
+the dry-run list (names and count) and get a yes, then run it without
+`--dry-run`. Default channel is iMessage on this Mac, which needs Full Disk
+Access for the terminal; `--channel email` needs the five `SMTP_*` values.
+
+The script exits nonzero with the reason if screening is not settled (a
+half-finished round, or a pool still above the cap); do not work around that
+by editing decisions. Report its per-row output verbatim: SENT+VERIFIED, SKIP,
+HEALED, FAIL. Anyone FAILED gets named with their contact so the user can
+reach them by hand. `data/booking-ledger.jsonl` is the record of who was
+invited; never delete it.
 
 ---
 

@@ -33,7 +33,7 @@ smaller pile, and you go again until the stack is interview-sized.
 <br>
 
 <sub>
-  <img src="https://img.shields.io/badge/tests-33%20passing-3E9B6E?style=flat-square" alt="33 tests passing">
+  <img src="https://img.shields.io/badge/tests-48%20passing-3E9B6E?style=flat-square" alt="48 tests passing">
   <img src="https://img.shields.io/badge/cost%20to%20run-%240-E0703A?style=flat-square" alt="Free to run">
   <img src="https://img.shields.io/badge/license-Apache--2.0-8A8A94?style=flat-square" alt="Apache-2.0 license">
 </sub>
@@ -94,6 +94,8 @@ If you would rather do it yourself, the whole thing is below.
 
   <img src="docs/pools.png" alt="The Pools panel: Next Round, Auto-Bid and Rejected tabs with counts, and a hearted candidate listed with their Round 1 note" width="300">
 - **Works on a laptop and a phone.** Drag the card, or use the arrow keys.
+- **Books the interviews.** One command texts or emails the final shortlist
+  your scheduling link, once and only once each.
 
 Cost to run: **$0** on the free tiers of Vercel and Supabase, for a few thousand
 candidates.
@@ -378,15 +380,59 @@ and something to ask your agent for by name.
 
 ---
 
+## From review to hire: book the interviews
+
+When the shortlist is settled, one command invites everyone on it to pick an
+interview slot from your scheduling link.
+
+```bash
+python3 scripts/book.py --url https://my-hiring-app.vercel.app --dry-run   # who would be contacted
+python3 scripts/book.py --url https://my-hiring-app.vercel.app             # send
+```
+
+Set `BOOKING_URL` (Cal.com, Calendly, anything) and `SENDER_NAME` in
+`.env.local` first. The message lives in `scripts/booking-message.txt`; edit
+it freely, keeping the `{first_name}`, `{job_title}` and `{booking_url}`
+placeholders.
+
+**It refuses to run on a half-finished round.** The app only hands over the
+shortlist once screening is settled: the survivors and auto-bids have merged
+into the final pool, or the pool already fits under the cap, and nobody has
+started swiping through it. Otherwise you get the reason and the count still
+undecided, and nobody is contacted.
+
+**Nobody is contacted twice.** Every verified send goes into
+`data/booking-ledger.jsonl` (git-ignored) and is skipped on the next run. Over
+iMessage there is a second guard: before sending, it looks for the booking link
+in that person's thread on this Mac, so a text you sent by hand or a run that
+crashed mid-verification counts as done.
+
+Three channels, picked with `--channel`:
+
+| Channel | How it sends | What counts as sent |
+|---|---|---|
+| `imessage` (default) | Messages.app on your Mac | The message is found in `~/Library/Messages/chat.db` |
+| `email` | SMTP, five `SMTP_*` values in `.env.local` | The server accepts it |
+| `print` | Writes each message to the terminal | Nothing is sent |
+
+iMessage needs Full Disk Access for your terminal (System Settings → Privacy &
+Security → Full Disk Access) so the send can be verified. A number with no
+iMessage fails loudly and is listed at the end for you to contact by hand.
+Anyone the run could not verify is not recorded, so re-running retries only
+them.
+
+---
+
 ## Project layout
 
 ```
-app/                  Next.js app — one page plus four API routes
+app/                  Next.js app — one page plus five API routes
   page.tsx            the entire review UI
   api/candidates      serves the next candidate and the round state
   api/decisions       records a decision; discards notes on reject
   api/pools           the Next Round / Auto-Bid / Rejected lists
   api/undo            deletes the newest decision
+  api/finalists       the settled shortlist, or 409 with the reason
 lib/rounds.ts         all round logic; pure functions, no database
 lib/db.ts             Postgres connection
 pipeline/
@@ -398,7 +444,9 @@ pipeline/
 scripts/
   upload.mjs          images to blob storage
   load.mjs            manifest to Postgres
-tests/                21 pipeline tests, 12 round-logic tests
+  book.py             invites the shortlist to book interviews
+  booking-message.txt the invitation, with placeholders
+tests/                21 pipeline, 9 booking, 18 round-logic tests
 docs/ui-mockup.html   standalone interactive UI mockup
 ```
 

@@ -13,3 +13,6 @@ input/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# who has been invited to interview (names, phones, emails)
+data/

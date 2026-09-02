@@ -1,0 +1,2 @@
+Hey {first_name}, this is {sender_name}. We liked your application for {job_title} and would like to interview you. Pick a time that works for you here:
+{booking_url}

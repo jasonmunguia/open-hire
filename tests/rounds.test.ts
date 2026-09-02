@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { roundState, TOP_N, type Decision } from "../lib/rounds";
+import { roundState, TOP_N, finalists, type Decision } from "../lib/rounds";
 
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `c${i}`);
 const decide = (list: string[], round: number, action: Decision["action"]): Decision[] =>
@@ -151,5 +151,74 @@ describe("reversibility", () => {
     const s = roundState(all, done);
     expect(s.rejected).toEqual(["c0", "c2"]);
     expect(s.stack).toEqual(["c1"]);
+  });
+});
+
+describe("finalists — who to interview", () => {
+
+  it("refuses before anything is decided", () => {
+    const r = finalists(ids(30), []);
+    expect("blocked" in r).toBe(true);
+  });
+
+  it("refuses while a round is half-finished, even after the final merge", () => {
+    const all = ids(100);
+    const r1 = [
+      ...decide(all.slice(0, 20), 1, "next_round"),
+      ...decide(all.slice(20, 25), 1, "auto_bid"),
+      ...decide(all.slice(25), 1, "reject"),
+    ];
+    // 20 + 5 = 25 <= TOP_N, so round 2 is the merged final pool of 25.
+    const settled = finalists(all, r1);
+    expect("ids" in settled && settled.ids).toHaveLength(25);
+    // Start cutting the final pool: half-finished round is refused.
+    const partial = finalists(all, [...r1, ...decide(all.slice(0, 3), 2, "reject")]);
+    expect("blocked" in partial && partial.blocked).toMatch(/half-finished/);
+  });
+
+  it("returns the merged final pool, auto-bids included, with the round number", () => {
+    const all = ids(100);
+    const r1 = [
+      ...decide(all.slice(0, 20), 1, "next_round"),
+      ...decide(all.slice(20, 25), 1, "auto_bid"),
+      ...decide(all.slice(25), 1, "reject"),
+    ];
+    const r = finalists(all, r1);
+    if (!("ids" in r)) throw new Error("expected finalists");
+    expect(r.round).toBe(2);
+    expect(r.ids).toEqual([...all.slice(0, 20), ...all.slice(20, 25)]);
+  });
+
+  it("returns the cut-down pool after the final round is fully reviewed", () => {
+    const all = ids(100);
+    const r1 = [
+      ...decide(all.slice(0, 20), 1, "next_round"),
+      ...decide(all.slice(20, 25), 1, "auto_bid"),
+      ...decide(all.slice(25), 1, "reject"),
+    ];
+    const pool = [...all.slice(0, 20), ...all.slice(20, 25)];
+    const r2 = [...decide(pool.slice(0, 8), 2, "next_round"), ...decide(pool.slice(8), 2, "reject")];
+    const r = finalists(all, [...r1, ...r2]);
+    if (!("ids" in r)) throw new Error("expected finalists");
+    expect(r.ids).toEqual(pool.slice(0, 8));
+    expect(r.round).toBe(3);
+  });
+
+  it("with no auto-bids, the pool is final once it fits under the cap", () => {
+    const all = ids(200);
+    const r1 = [...decide(all.slice(0, 120), 1, "next_round"), ...decide(all.slice(120), 1, "reject")];
+    expect("blocked" in finalists(all, r1)).toBe(true); // 120 > TOP_N
+    const r2 = [...decide(all.slice(0, 30), 2, "next_round"), ...decide(all.slice(30, 120), 2, "reject")];
+    const r = finalists(all, [...r1, ...r2]);
+    if (!("ids" in r)) throw new Error("expected finalists");
+    expect(r.ids).toHaveLength(30);
+    expect(TOP_N).toBeGreaterThanOrEqual(30);
+  });
+
+  it("refuses while the auto-bid pile is at the cap", () => {
+    const all = ids(120);
+    const r1 = [...decide(all.slice(0, 60), 1, "auto_bid"), ...decide(all.slice(60), 1, "reject")];
+    const r = finalists(all, r1);
+    expect("blocked" in r && r.blocked).toMatch(/auto-bid/);
   });
 });
