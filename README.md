@@ -18,6 +18,8 @@ smaller pile, and you go again until the stack is interview-sized.
 
 <br>
 
+<h2><a href="https://htmlpreview.github.io/?https://github.com/jasonmunguia/open-hire/blob/main/docs/ui-mockup.html"><b>Try the UI</b></a></h2>
+
 <img src="docs/screenshot.png" alt="Open Hire running on a phone: a resume fills the screen with Go Back, Reject, Auto-Bid and Next Round beneath it, a notes box, and a round counter reading 3 of 1289" width="300">
 
 <br>
@@ -27,7 +29,6 @@ smaller pile, and you go again until the stack is interview-sized.
 
 <a href="#the-fastest-way-to-use-this"><b>Get started</b></a> &nbsp;·&nbsp;
 <a href="#before-anything-else-label-the-resumes"><b>Label your PDF</b></a> &nbsp;·&nbsp;
-<a href="https://htmlpreview.github.io/?https://github.com/jasonmunguia/open-hire/blob/main/docs/ui-mockup.html"><b>Try the UI</b></a> &nbsp;·&nbsp;
 <a href="#access-and-privacy--read-this-once"><b>Privacy</b></a>
 
 <br>
