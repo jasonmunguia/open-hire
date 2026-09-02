@@ -29,9 +29,9 @@ def run(args, tmp, env=ENV):
 
 
 def test_normalize_phone():
-    assert book.normalize_phone("9096429423") == "+19096429423"
-    assert book.normalize_phone("+1 (412) 616-5814") == "+14126165814"
-    assert book.normalize_phone("14126166226") == "+14126166226"
+    assert book.normalize_phone("2025550142") == "+12025550142"
+    assert book.normalize_phone("+1 (202) 555-0143") == "+12025550143"
+    assert book.normalize_phone("12025550144") == "+12025550144"
     assert book.normalize_phone("") == ""
 
 
